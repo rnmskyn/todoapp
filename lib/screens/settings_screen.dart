@@ -14,14 +14,14 @@ class SettingsScreen extends ConsumerWidget {
         padding: EdgeInsets.all(16),
         children: [
           SwitchListTile(
-            title: Text('Dark Mode'),
-            value: ref.read(isDarkModeProvider),
+            title: const Text('Dark Mode'),
+            value: ref.watch(isDarkModeProvider),
             onChanged: (value) => ref.read(appStateProvider.notifier).toggleDarkMode(),
           ),
 
           SwitchListTile(
             title: const Text('Ask for Deletion Confirmation'),
-            value: ref.read(asksForDeletionConfirmation),
+            value: ref.watch(asksForDeletionConfirmation),
             onChanged: (value) => ref.read(appStateProvider.notifier).toggleDeletionConfirmation(),
           ),
         ],

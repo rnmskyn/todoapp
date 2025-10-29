@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:i12_into_012/providers/app_state_provider.dart';
+import 'package:i12_into_012/screens/settings_screen.dart';
 import 'package:i12_into_012/screens/todo_list_screen.dart';
-import 'package:i12_into_012/widgets/add_todo_dialog.dart';
+import 'package:i12_into_012/widgets/button_row.dart';
 
 void main() {
   runApp(
@@ -28,14 +30,12 @@ class MyApp extends ConsumerWidget {
         brightness: Brightness.dark,
         /* dark theme settings */
       ),
-      themeMode: ThemeMode.dark,
-      /* ThemeMode.system to follow system theme, 
-        ThemeMode.light for light theme, 
-        ThemeMode.dark for dark theme
-      */
+      themeMode: ref.watch(isDarkModeProvider)
+          ? ThemeMode.dark
+          : ThemeMode.light,
       debugShowCheckedModeBanner: false,
 
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'TODO APP'),
     );
   }
 }
@@ -50,23 +50,28 @@ class MyHomePage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
 
-        title: Text(title),
+        title: Center(
+          child: Text( title, textAlign: TextAlign.center)),
+
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // Navigate to settings screen or open settings dialog
+              Navigator.push(
+                context,
+                MaterialPageRoute<ConsumerWidget>(
+                  builder: (context) => SettingsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Center(
         child: TodoListScreen(),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog<SimpleDialog>(
-            context: context,
-            builder: (BuildContext context) {
-              return AddTodoDialog();
-            },
-          );
-        },
-        tooltip: 'Add Item',
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: ButtonRow(),
       // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
