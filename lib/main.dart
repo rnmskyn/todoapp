@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i12_into_012/providers/app_state_provider.dart';
-import 'package:i12_into_012/screens/settings_screen.dart';
 import 'package:i12_into_012/screens/todo_list_screen.dart';
-import 'package:i12_into_012/widgets/button_row.dart';
+import 'package:i12_into_012/widgets/action_button.dart';
+import 'package:i12_into_012/widgets/appbar.dart';
 
 void main() {
   runApp(
@@ -47,31 +47,11 @@ class MyHomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-
-        title: Center(
-          child: Text( title, textAlign: TextAlign.center)),
-
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // Navigate to settings screen or open settings dialog
-              Navigator.push(
-                context,
-                MaterialPageRoute<ConsumerWidget>(
-                  builder: (context) => SettingsScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+      appBar: DynamicAppBar(title),
       body: Center(
         child: TodoListScreen(),
       ),
-      floatingActionButton: ButtonRow(),
+      floatingActionButton: ActionButton(),
       // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
