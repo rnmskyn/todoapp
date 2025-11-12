@@ -1,19 +1,40 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:i12_into_012/model/app_state.dart';
+import 'package:i12_into_012/model/todo.dart';
+import 'package:i12_into_012/widgets/todo_item.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
 
 class StorageService {
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    return directory.path;
+  Database? database;
+
+  Future<void> init() async {
+    database = await openAppDatabase();
   }
 
-  Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/todo_app_state.json');
+  Future<String> get _localPath async {
+    var databasesPath = await getDatabasesPath();
+    return join(databasesPath, 'todo_app_state.db');
+  }
+  
+  Future<Database> openAppDatabase() async {
+    Database database = await openDatabase(await _localPath, version: 1,
+      onCreate: (Database db, int version) async {
+      await db.execute(
+        'CREATE TABLE Todo (id TEXT PRIMARY KEY, task TEXT, completed INTEGER)');
+      });
+    return database;
+  }
+
+  Future<void> saveToDoItem(Todo item) async {
+    await database?.insert(
+      'Todo',
+      item.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace
+    );
   }
 
   Future<void> saveAppState(AppState state) async {
@@ -37,4 +58,5 @@ class StorageService {
       return null;
     }
   }
+
 }

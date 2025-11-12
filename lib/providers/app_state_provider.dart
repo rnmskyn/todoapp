@@ -4,6 +4,7 @@ import 'package:i12_into_012/model/app_state.dart';
 import 'package:i12_into_012/model/todo.dart';
 import 'package:i12_into_012/services/storage_service.dart';
 import 'package:uuid/uuid.dart';
+import 'package:sqflite/sqflite.dart';
 
 class AppStateNotifier extends StateNotifier<AppState> {
   final StorageService _storageService;
@@ -46,8 +47,7 @@ class AppStateNotifier extends StateNotifier<AppState> {
     state = state.copyWith(
       todos: [...state.todos, newTodo],
     );
-    
-    saveState();
+    _storageService.saveToDoItem(newTodo);
   }
 
   // Toggle todo completion status
@@ -57,11 +57,10 @@ class AppStateNotifier extends StateNotifier<AppState> {
         if (todo.id == id) {
           return todo.copyWith(isCompleted: !todo.isCompleted);
         }
+        _storageService.saveToDoItem(todo);
         return todo;
       }).toList(),
     );
-    
-    saveState();
   }
 
   // Toggle todo selection

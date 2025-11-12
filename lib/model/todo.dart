@@ -23,16 +23,12 @@ class Todo {
     );
   }
 
-  // Convert to JSON for storage
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'text': text,
-      'isCompleted': isCompleted,
-    };
+  Map<String, Object?> toMap() {
+    return {'id': id, 'text': text, 'isCompleted': isCompleted as int };
   }
 
-  // Create Todo from JSON
+  
+
   factory Todo.fromJson(Map<String, dynamic> json) {
     return Todo(
       id: json['id'] as String,
