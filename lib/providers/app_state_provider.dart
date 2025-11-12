@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:i12_into_012/model/app_state.dart';
 import 'package:i12_into_012/model/todo.dart';
 import 'package:i12_into_012/services/storage_service.dart';
+import 'package:uuid/uuid.dart';
 
 class AppStateNotifier extends StateNotifier<AppState> {
   final StorageService _storageService;
@@ -36,9 +37,9 @@ class AppStateNotifier extends StateNotifier<AppState> {
   // Add a new todo
   void addTodo(String text) {
     if (text.trim().isEmpty) return;
-    
+    var uuid = Uuid();
     final newTodo = Todo(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: uuid.v4(),
       text: text.trim(),
     );
     
