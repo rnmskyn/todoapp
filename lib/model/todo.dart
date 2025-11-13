@@ -24,16 +24,6 @@ class Todo {
   }
 
   Map<String, Object?> toMap() {
-    return {'id': id, 'text': text, 'isCompleted': isCompleted as int };
-  }
-
-  
-
-  factory Todo.fromJson(Map<String, dynamic> json) {
-    return Todo(
-      id: json['id'] as String,
-      text: json['text'] as String,
-      isCompleted: json['isCompleted'] as bool,
-    );
+    return {'id': id, 'text': text, 'isCompleted': isCompleted ? 1 : 0 };
   }
 }

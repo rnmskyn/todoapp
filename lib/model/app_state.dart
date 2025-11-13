@@ -28,7 +28,7 @@ class AppState {
       selectedTodoIds: selectedTodoIds ?? this.selectedTodoIds,
     );
   }
-
+  /*
   // Convert to JSON for storage
   Map<String, dynamic> toJson() {
     return {
@@ -38,16 +38,29 @@ class AppState {
       // We don't persist selection state
     };
   }
-
+*/
   // Create AppState from JSON
-  factory AppState.fromJson(Map<String, dynamic> json) {
+  factory AppState.fromMap(Map<String, Object?> settingsMap, List<Map<String, Object?>> todoMaps) {
     return AppState(
-      todos: (json['todos'] as List<dynamic>? ?? [])
-          .map((todoJson) => Todo.fromJson(todoJson as Map<String, dynamic>))
-          .toList(),
-      isDarkMode: json['isDarkMode'] as bool? ?? false,
-      asksForDeletionConfirmation:
-          json['asksForDeletionConfirmation'] as bool? ?? true,
+      todos: [
+        for (final todoMap in todoMaps)
+          Todo(
+            id: todoMap['id'] as String? ?? '',
+            text: todoMap['text'] as String? ?? '',
+            isCompleted: () {
+              final v = todoMap['isCompleted'] ?? todoMap['completed'];
+              return v != 0;
+            }(),
+          ),
+      ],
+      isDarkMode: () {
+        final v = settingsMap['isDarkMode'];
+        return v != 0;
+      }(),
+      asksForDeletionConfirmation: () {
+        final v = settingsMap['asksForDeletionConfirmation'];
+        return v != 0;
+      }(),
     );
   }
 }

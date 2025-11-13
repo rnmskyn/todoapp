@@ -9,10 +9,11 @@ import 'package:path/path.dart';
 
 
 class StorageService {
-  Database? database;
+  late Database database;
 
   Future<void> init() async {
     database = await openAppDatabase();
+    print('StorageService: opened database at ${await _localPath}');
   }
 
   Future<String> get _localPath async {
@@ -21,42 +22,60 @@ class StorageService {
   }
   
   Future<Database> openAppDatabase() async {
-    Database database = await openDatabase(await _localPath, version: 1,
-      onCreate: (Database db, int version) async {
-      await db.execute(
-        'CREATE TABLE Todo (id TEXT PRIMARY KEY, task TEXT, completed INTEGER)');
-      });
-    return database;
+    final path = await _localPath;
+    try {
+      Database database = await openDatabase(path, version: 1,
+        onCreate: (Database db, int version) async {
+          // Some sqlite wrappers don't support multiple statements in a
+          // single execute call. Create tables separately.
+          await db.execute(
+            'CREATE TABLE Todo (id TEXT PRIMARY KEY, text TEXT, isCompleted INTEGER)'
+          );
+          await db.execute(
+            'CREATE TABLE Settings (isDarkMode INTEGER PRIMARY KEY, asksForDeletionConfirmation INTEGER)'
+          );
+        }
+      );
+      return database;
+    } catch (e) {
+      print('Failed to open database at $path: $e');
+      rethrow;
+    }
   }
 
   Future<void> saveToDoItem(Todo item) async {
-    await database?.insert(
+    await database.insert(
       'Todo',
       item.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace
     );
   }
-
-  Future<void> saveAppState(AppState state) async {
-    final file = await _localFile;
-    final jsonString = jsonEncode(state.toJson());
-    await file.writeAsString(jsonString);
+  Future<void> deleteToDoItem(Todo item) async {
+  await database.delete(
+    'Todo',
+    // Use a `where` clause to delete a specific dog.
+    where: 'id = ?',
+    whereArgs: [item.id],
+    );
   }
 
+  Future<void> saveSettings(AppState appState) async {
+    await database.delete('Settings');
+    await database.insert(
+      'Settings',
+      {
+        'isDarkMode': appState.isDarkMode ? 1 : 0,
+        'asksForDeletionConfirmation': appState.asksForDeletionConfirmation ? 1 : 0,
+      },
+    );
+  }
+  
   Future<AppState?> loadAppState() async {
-    try {
-      final file = await _localFile;
-      if (!await file.exists()) {
-        return null;
-      }
-      
-      final jsonString = await file.readAsString();
-      final jsonMap = jsonDecode(jsonString) as Map<String, dynamic>;
-      return AppState.fromJson(jsonMap);
-    } catch (e) {
-      print('Error loading app state: $e');
-      return null;
-    }
+      final List<Map<String, Object?>> todoMaps = await database.query('Todo');
+      final List<Map<String, Object?>> settingsList = await database.query('Settings');
+      final Map<String, Object?> settingsMap =
+        settingsList.isNotEmpty ? settingsList[0] : <String, Object?>{};
+      return AppState.fromMap(settingsMap, todoMaps);
   }
 
 }

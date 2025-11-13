@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:i12_into_012/model/app_state.dart';
@@ -16,6 +18,7 @@ class AppStateNotifier extends StateNotifier<AppState> {
   // Load state from storage
   Future<void> loadState() async {
     try {
+      log('Loading app state from storage');
       final appState = await _storageService.loadAppState();
       if (appState != null) {
         state = appState;
@@ -25,14 +28,16 @@ class AppStateNotifier extends StateNotifier<AppState> {
       print('Error loading state: $e');
     }
   }
-
+  Future<void> saveToDoItem(Todo item) async {
   // Save state to storage
-  Future<void> saveState() async {
-    try {
-      await _storageService.saveAppState(state);
-    } catch (e) {
-      print('Error saving state: $e');
-    }
+    await _storageService.saveToDoItem(item);
+  }
+  
+  Future<void> saveSettings() async {
+    await _storageService.saveSettings(state);
+  }
+  Future<void> deleteToDoItem(Todo item) async {
+    await _storageService.deleteToDoItem(item);
   }
 
   // Add a new todo
@@ -47,20 +52,28 @@ class AppStateNotifier extends StateNotifier<AppState> {
     state = state.copyWith(
       todos: [...state.todos, newTodo],
     );
-    _storageService.saveToDoItem(newTodo);
+    saveToDoItem(newTodo);
   }
 
   // Toggle todo completion status
-  void toggleTodo(String id) {
-    state = state.copyWith(
-      todos: state.todos.map((todo) {
-        if (todo.id == id) {
-          return todo.copyWith(isCompleted: !todo.isCompleted);
-        }
-        _storageService.saveToDoItem(todo);
-        return todo;
-      }).toList(),
-    );
+  Future<void> toggleTodo(String id) async {
+    final updatedTodos = state.todos.map((todo) {
+      if (todo.id == id) {
+        return todo.copyWith(isCompleted: !todo.isCompleted);
+      }
+      return todo;
+    }).toList();
+
+    // Update state optimistically
+    state = state.copyWith(todos: updatedTodos);
+
+    // Persist the changed todo (if found)
+    for (final t in updatedTodos) {
+      if (t.id == id) {
+        await saveToDoItem(t);
+        break;
+      }
+    }
   }
 
   // Toggle todo selection
@@ -71,7 +84,6 @@ class AppStateNotifier extends StateNotifier<AppState> {
     } else {
       selectedIds.add(id);
     }
-    
     state = state.copyWith(selectedTodoIds: selectedIds);
   }
 
@@ -83,23 +95,27 @@ class AppStateNotifier extends StateNotifier<AppState> {
   // Delete selected todos
   Future<void> deleteSelectedTodos() async {
     if (state.selectedTodoIds.isEmpty) return;
-    
-    final remainingTodos = state.todos.where(
-      (todo) => !state.selectedTodoIds.contains(todo.id)
-    ).toList();
-    
+    // Capture the selected IDs and the todos to delete before mutating state
+    final selectedIds = Set<String>.from(state.selectedTodoIds);
+    final todosToDelete = state.todos.where((t) => selectedIds.contains(t.id)).toList();
+
+    // Update state first (optimistic UI)
+    final remainingTodos = state.todos.where((todo) => !selectedIds.contains(todo.id)).toList();
     state = state.copyWith(
       todos: remainingTodos,
       selectedTodoIds: {},
     );
-    
-    saveState();
+
+    // Delete from persistent storage
+    for (final todo in todosToDelete) {
+      await deleteToDoItem(todo);
+    }
   }
 
   // Toggle dark mode
   void toggleDarkMode() {
     state = state.copyWith(isDarkMode: !state.isDarkMode);
-    saveState();
+    saveSettings();
   }
 
   // Toggle deletion confirmation
@@ -107,12 +123,14 @@ class AppStateNotifier extends StateNotifier<AppState> {
     state = state.copyWith(
       asksForDeletionConfirmation: !state.asksForDeletionConfirmation
     );
-    saveState();
+    saveSettings();
   }
 }
 
 // Storage service provider
 final storageServiceProvider = Provider<StorageService>((ref) {
+  // StorageService must be initialized before use. Provide an
+  // initialized instance from `main()` using `ProviderScope.overrides`.
   return StorageService();
 });
 
