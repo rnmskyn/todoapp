@@ -8,6 +8,13 @@ import 'package:i12_into_012/services/sqlite_storage.dart';
 import 'package:i12_into_012/services/storage_service.dart';
 import 'package:uuid/uuid.dart';
 
+enum StorageType {
+  SQLite,
+  JSON,
+}
+
+final storageSelection = StorageType.SQLite;
+
 class AppStateNotifier extends StateNotifier<AppState> {
   final StorageService _storageService;
   
@@ -125,21 +132,13 @@ class AppStateNotifier extends StateNotifier<AppState> {
   }
 }
 
-// Storage service provider
-final storageServiceProvider =  Provider<JsonStorage>((ref) { //Provider<SqliteStorage>((ref) {
-  // StorageService must be initialized before use. Provide an
-  // initialized instance from `main()` using `ProviderScope.overrides`.
-  return JsonStorage(ref);
+final storageServiceProvider = Provider<StorageService>((ref) {
+  if (storageSelection == StorageType.JSON) {
+    return JsonStorage(ref);
+  } else {
+    return SqliteStorage(ref);
+  }
 });
-
-/*
-final storageServiceProvider =  Provider<SqliteStorage>((ref) {
-  // StorageService must be initialized before use. Provide an
-  // initialized instance from `main()` using `ProviderScope.overrides`.
-  return SqliteStorage(ref);
-});
-*/
-
 
 // App state notifier provider
 final appStateProvider = StateNotifierProvider<AppStateNotifier, AppState>((ref) {
