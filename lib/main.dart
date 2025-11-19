@@ -5,7 +5,6 @@ import 'package:i12_into_012/screens/todo_list_screen.dart';
 import 'package:i12_into_012/widgets/action_button.dart';
 import 'package:i12_into_012/widgets/appbar.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:i12_into_012/services/storage_service.dart';
 
 
 Future<void> main() async {
@@ -19,17 +18,14 @@ Future<void> main() async {
 
   // Initialize storage service before the app starts so the DB is
   // available synchronously to other providers/notifiers.
-  final storageService = StorageService();
-  await storageService.init();
+  // final storageService = StorageService();
+  // await storageService.init();
 
   runApp(
     // Enabled Riverpod for the entire application and override the
     // storageServiceProvider with an already-initialized instance.
-    ProviderScope(
-      overrides: [
-        storageServiceProvider.overrideWithValue(storageService),
-      ],
-      child: const MyApp(),
+    const ProviderScope(
+      child: MyApp(),
     ),
   );
 }

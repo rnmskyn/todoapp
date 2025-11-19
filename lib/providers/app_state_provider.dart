@@ -1,12 +1,11 @@
 import 'dart:developer';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:i12_into_012/model/app_state.dart';
 import 'package:i12_into_012/model/todo.dart';
+import 'package:i12_into_012/services/sqlite_storage.dart';
 import 'package:i12_into_012/services/storage_service.dart';
 import 'package:uuid/uuid.dart';
-import 'package:sqflite/sqflite.dart';
 
 class AppStateNotifier extends StateNotifier<AppState> {
   final StorageService _storageService;
@@ -128,10 +127,10 @@ class AppStateNotifier extends StateNotifier<AppState> {
 }
 
 // Storage service provider
-final storageServiceProvider = Provider<StorageService>((ref) {
+final storageServiceProvider = Provider<SqliteStorage>((ref) {
   // StorageService must be initialized before use. Provide an
   // initialized instance from `main()` using `ProviderScope.overrides`.
-  return StorageService();
+  return SqliteStorage(ref);
 });
 
 // App state notifier provider
