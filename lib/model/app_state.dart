@@ -1,46 +1,38 @@
+import 'package:i12_into_012/model/settings.dart';
 import 'package:i12_into_012/model/todo.dart';
 
 class AppState {
   final List<Todo> todos;
-  final bool isDarkMode;
-  final bool asksForDeletionConfirmation;
+  final Settings settings;
   final Set<String> selectedTodoIds; // For tracking selected items
 
   AppState({
     this.todos = const [],
-    this.isDarkMode = false,
-    this.asksForDeletionConfirmation = true,
+    this.settings = const Settings(
+      isDarkMode: false,
+      asksForDeletionConfirmation: true,
+    ),
     this.selectedTodoIds = const {},
   });
 
   // Create a copy with modified properties
   AppState copyWith({
     List<Todo>? todos,
-    bool? isDarkMode,
-    bool? asksForDeletionConfirmation,
+    Settings? settings,
     Set<String>? selectedTodoIds,
   }) {
     return AppState(
       todos: todos ?? this.todos,
-      isDarkMode: isDarkMode ?? this.isDarkMode,
-      asksForDeletionConfirmation:
-          asksForDeletionConfirmation ?? this.asksForDeletionConfirmation,
+      settings: settings ?? this.settings,
       selectedTodoIds: selectedTodoIds ?? this.selectedTodoIds,
     );
   }
-  /*
-  // Convert to JSON for storage
-  Map<String, dynamic> toJson() {
-    return {
-      'todos': todos.map((todo) => todo.toJson()).toList(),
-      'isDarkMode': isDarkMode,
-      'asksForDeletionConfirmation': asksForDeletionConfirmation,
-      // We don't persist selection state
-    };
-  }
-*/
+
   // Create AppState from JSON
-  factory AppState.fromMap(Map<String, Object?> settingsMap, List<Map<String, Object?>> todoMaps) {
+  factory AppState.fromMap(
+    Map<String, Object?> settingsMap,
+    List<Map<String, Object?>> todoMaps,
+  ) {
     return AppState(
       todos: [
         for (final todoMap in todoMaps)
@@ -53,14 +45,11 @@ class AppState {
             }(),
           ),
       ],
-      isDarkMode: () {
-        final v = settingsMap['isDarkMode'];
-        return v != 0;
-      }(),
-      asksForDeletionConfirmation: () {
-        final v = settingsMap['asksForDeletionConfirmation'];
-        return v != 0;
-      }(),
+      settings: Settings(
+        isDarkMode: (settingsMap['isDarkMode'] as bool?) ?? false,
+        asksForDeletionConfirmation:
+            (settingsMap['asksForDeletionConfirmation'] as bool?) ?? false,
+      ),
     );
   }
 }

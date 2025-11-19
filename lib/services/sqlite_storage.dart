@@ -33,7 +33,7 @@ class SqliteStorage implements StorageService {
 
   SqliteStorage(this._ref);
 
-  Future<void> saveToDoItem(Todo item) async {
+  Future<void> saveToDoItem(AppState appState, Todo item) async {
     final db = await _ref.read(databaseProvider.future);
     await db.insert(
       'Todo',
@@ -42,7 +42,7 @@ class SqliteStorage implements StorageService {
     );
   }
 
-  Future<void> deleteToDoItem(Todo item) async {
+  Future<void> deleteToDoItem(AppState appState, Todo item) async {
     final db = await _ref.read(databaseProvider.future);
     await db.delete(
     'Todo',
@@ -58,8 +58,8 @@ class SqliteStorage implements StorageService {
     await db.insert(
       'Settings',
       {
-        'isDarkMode': appState.isDarkMode ? 1 : 0,
-        'asksForDeletionConfirmation': appState.asksForDeletionConfirmation ? 1 : 0,
+        'isDarkMode': appState.settings.isDarkMode ? 1 : 0,
+        'asksForDeletionConfirmation': appState.settings.asksForDeletionConfirmation ? 1 : 0,
       },
     );
   }

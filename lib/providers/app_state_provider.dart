@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:i12_into_012/model/app_state.dart';
 import 'package:i12_into_012/model/todo.dart';
+import 'package:i12_into_012/services/json_storage.dart';
 import 'package:i12_into_012/services/sqlite_storage.dart';
 import 'package:i12_into_012/services/storage_service.dart';
 import 'package:uuid/uuid.dart';
@@ -29,14 +30,14 @@ class AppStateNotifier extends StateNotifier<AppState> {
   }
   Future<void> saveToDoItem(Todo item) async {
   // Save state to storage
-    await _storageService.saveToDoItem(item);
+    await _storageService.saveToDoItem(state, item);
   }
   
   Future<void> saveSettings() async {
     await _storageService.saveSettings(state);
   }
   Future<void> deleteToDoItem(Todo item) async {
-    await _storageService.deleteToDoItem(item);
+    await _storageService.deleteToDoItem(state, item);
   }
 
   // Add a new todo
@@ -113,25 +114,32 @@ class AppStateNotifier extends StateNotifier<AppState> {
 
   // Toggle dark mode
   void toggleDarkMode() {
-    state = state.copyWith(isDarkMode: !state.isDarkMode);
+    state = state.copyWith(settings: state.settings.toggleDarkMode());
     saveSettings();
   }
 
   // Toggle deletion confirmation
   void toggleDeletionConfirmation() {
-    state = state.copyWith(
-      asksForDeletionConfirmation: !state.asksForDeletionConfirmation
-    );
+    state = state.copyWith(settings: state.settings.toggleDeletionConfirmation());
     saveSettings();
   }
 }
 
 // Storage service provider
-final storageServiceProvider = Provider<SqliteStorage>((ref) {
+final storageServiceProvider =  Provider<JsonStorage>((ref) { //Provider<SqliteStorage>((ref) {
+  // StorageService must be initialized before use. Provide an
+  // initialized instance from `main()` using `ProviderScope.overrides`.
+  return JsonStorage(ref);
+});
+
+/*
+final storageServiceProvider =  Provider<SqliteStorage>((ref) {
   // StorageService must be initialized before use. Provide an
   // initialized instance from `main()` using `ProviderScope.overrides`.
   return SqliteStorage(ref);
 });
+*/
+
 
 // App state notifier provider
 final appStateProvider = StateNotifierProvider<AppStateNotifier, AppState>((ref) {
@@ -145,7 +153,7 @@ final todosProvider = Provider<List<Todo>>((ref) {
 });
 
 final isDarkModeProvider = Provider<bool>((ref) {
-  return ref.watch(appStateProvider).isDarkMode;
+  return ref.watch(appStateProvider).settings.isDarkMode;
 });
 
 final selectedTodosProvider = Provider<Set<String>>((ref) {
@@ -157,5 +165,5 @@ final hasSelectedTodosProvider = Provider<bool>((ref) {
 });
 
 final asksForDeletionConfirmation = Provider<bool>((ref) {
-  return ref.watch(appStateProvider).asksForDeletionConfirmation;
+  return ref.watch(appStateProvider).settings.asksForDeletionConfirmation;
 });

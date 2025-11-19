@@ -3,9 +3,9 @@ import 'package:i12_into_012/model/todo.dart';
 
 
 abstract class StorageService {
-  Future<void> saveToDoItem(Todo item);
+  Future<void> saveToDoItem(AppState appState, Todo item);
 
-  Future<void> deleteToDoItem(Todo item);
+  Future<void> deleteToDoItem(AppState appState, Todo item);
 
   Future<void> saveSettings(AppState appState);
 
