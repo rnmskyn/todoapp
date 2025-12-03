@@ -6,26 +6,28 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 final databaseProvider = FutureProvider<Database>((ref) async {
-    var databasesPath = await getDatabasesPath();
-    final path = join(databasesPath, 'todo_app_state.db');
-    try {
-      Database database = await openDatabase(path, version: 1,
-        onCreate: (Database db, int version) async {
-          // Some sqlite wrappers don't support multiple statements in a
-          // single execute call. Create tables separately.
-          await db.execute(
-            'CREATE TABLE Todo (id TEXT PRIMARY KEY, text TEXT, isCompleted INTEGER)'
-          );
-          await db.execute(
-            'CREATE TABLE Settings (isDarkMode INTEGER PRIMARY KEY, asksForDeletionConfirmation INTEGER)'
-          );
-        }
-      );
-      return database;
-    } catch (e) {
-      print('Failed to open database at $path: $e');
-      rethrow;
-    }
+  var databasesPath = await getDatabasesPath();
+  final path = join(databasesPath, 'todo_app_state.db');
+  try {
+    Database database = await openDatabase(
+      path,
+      version: 1,
+      onCreate: (Database db, int version) async {
+        // Some sqlite wrappers don't support multiple statements in a
+        // single execute call. Create tables separately.
+        await db.execute(
+          'CREATE TABLE Todo (id TEXT PRIMARY KEY, text TEXT, isCompleted INTEGER)',
+        );
+        await db.execute(
+          'CREATE TABLE Settings (isDarkMode INTEGER PRIMARY KEY, asksForDeletionConfirmation INTEGER)',
+        );
+      },
+    );
+    return database;
+  } catch (e) {
+    print('Failed to open database at $path: $e');
+    rethrow;
+  }
 });
 
 class SqliteStorage implements StorageService {
@@ -37,18 +39,18 @@ class SqliteStorage implements StorageService {
     final db = await _ref.read(databaseProvider.future);
     await db.insert(
       'Todo',
-      item.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace
+      item.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
   Future<void> deleteToDoItem(AppState appState, Todo item) async {
     final db = await _ref.read(databaseProvider.future);
     await db.delete(
-    'Todo',
-    // Use a `where` clause to delete a specific dog.
-    where: 'id = ?',
-    whereArgs: [item.id],
+      'Todo',
+      // Use a `where` clause to delete a specific dog.
+      where: 'id = ?',
+      whereArgs: [item.id],
     );
   }
 
@@ -59,17 +61,19 @@ class SqliteStorage implements StorageService {
       'Settings',
       {
         'isDarkMode': appState.settings.isDarkMode ? 1 : 0,
-        'asksForDeletionConfirmation': appState.settings.asksForDeletionConfirmation ? 1 : 0,
+        'asksForDeletionConfirmation':
+            appState.settings.asksForDeletionConfirmation ? 1 : 0,
       },
     );
   }
-  
+
   Future<AppState?> loadAppState() async {
-      final db = await _ref.read(databaseProvider.future);
-      final List<Map<String, Object?>> todoMaps = await db.query('Todo');
-      final List<Map<String, Object?>> settingsList = await db.query('Settings');
-      final Map<String, Object?> settingsMap =
-        settingsList.isNotEmpty ? settingsList[0] : <String, Object?>{};
-      return AppState.fromMap(settingsMap, todoMaps);
+    final db = await _ref.read(databaseProvider.future);
+    final List<Map<String, Object?>> todoMaps = await db.query('Todo');
+    final List<Map<String, Object?>> settingsList = await db.query('Settings');
+    final Map<String, Object?> settingsMap = settingsList.isNotEmpty
+        ? settingsList[0]
+        : <String, Object?>{};
+    return AppState.fromMap(settingsMap, todoMaps);
   }
 }

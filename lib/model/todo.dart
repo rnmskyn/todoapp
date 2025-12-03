@@ -1,29 +1,25 @@
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class Todo {
-  final String id;
-  final String text;
-  final bool isCompleted;
+part 'todo.freezed.dart';
+part 'todo.g.dart';
 
-  Todo({
-    required this.id,
-    required this.text,
-    this.isCompleted = false,
-  });
+@freezed
+//@JsonSerializable()
+abstract class Todo with _$Todo {
+  const factory Todo({
+    required String id,
+    required String text,
+    @BoolIntConverter() @Default(false) bool isCompleted,
+  }) = _Todo;
 
-  // Create a copy with modified properties
-  Todo copyWith({
-    String? id,
-    String? text,
-    bool? isCompleted,
-  }) {
-    return Todo(
-      id: id ?? this.id,
-      text: text ?? this.text,
-      isCompleted: isCompleted ?? this.isCompleted,
-    );
-  }
+  factory Todo.fromJson(Map<String, Object?> json) => _$TodoFromJson(json);
+}
 
-  Map<String, Object?> toMap() {
-    return {'id': id, 'text': text, 'isCompleted': isCompleted ? 1 : 0 };
-  }
+class BoolIntConverter extends JsonConverter<bool, int> {
+  const BoolIntConverter();
+  @override
+  bool fromJson(int json) => json != 0;
+  @override
+  int toJson(bool object) => object ? 1 : 0;
 }

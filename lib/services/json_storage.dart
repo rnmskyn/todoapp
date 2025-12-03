@@ -7,8 +7,6 @@ import 'package:i12_into_012/model/todo.dart';
 import 'package:i12_into_012/services/storage_service.dart';
 import 'package:path_provider/path_provider.dart';
 
-
-
 class JsonStorage implements StorageService {
   final Ref _ref; // Ref to access providers
 
@@ -46,15 +44,15 @@ class JsonStorage implements StorageService {
       if (!await file.exists()) {
         return null;
       }
-      
+
       final jsonString = await file.readAsString();
       final jsonMap = jsonDecode(jsonString) as Map<String, dynamic>;
       List<dynamic> todosDynamic = jsonMap['todos'] as List<dynamic>;
 
-    // Convert it to List<Map<String, dynamic?>>
-    List<Map<String, dynamic?>> todosMapList = todosDynamic
-      .map((item) => item as Map<String, dynamic?>)
-      .toList();
+      // Convert it to List<Map<String, dynamic?>>
+      List<Map<String, dynamic?>> todosMapList = todosDynamic
+          .map((item) => item as Map<String, dynamic?>)
+          .toList();
       final settingsMap = {
         'isDarkMode': jsonMap['isDarkMode'],
         'asksForDeletionConfirmation': jsonMap['asksForDeletionConfirmation'],
@@ -68,7 +66,7 @@ class JsonStorage implements StorageService {
 
   Map<String, dynamic> toJson(List<Todo> todos, Settings settings) {
     return {
-      'todos': todos.map((todo) => todo.toMap()).toList(),
+      'todos': todos.map((todo) => todo.toJson()).toList(),
       'isDarkMode': settings.isDarkMode,
       'asksForDeletionConfirmation': settings.asksForDeletionConfirmation,
     };
