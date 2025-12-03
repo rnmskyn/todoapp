@@ -46,9 +46,9 @@ class AppState {
           ),
       ],
       settings: Settings(
-        isDarkMode: (settingsMap['isDarkMode'] as bool?) ?? false,
+        isDarkMode: settingsMap['isDarkMode'] != 0,
         asksForDeletionConfirmation:
-            (settingsMap['asksForDeletionConfirmation'] as bool?) ?? false,
+            settingsMap['asksForDeletionConfirmation'] != 0,
       ),
     );
   }

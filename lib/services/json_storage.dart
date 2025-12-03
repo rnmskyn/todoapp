@@ -7,6 +7,7 @@ import 'package:i12_into_012/model/todo.dart';
 import 'package:i12_into_012/services/storage_service.dart';
 import 'package:path_provider/path_provider.dart';
 
+
 class JsonStorage implements StorageService {
   final Ref _ref; // Ref to access providers
 
@@ -51,7 +52,7 @@ class JsonStorage implements StorageService {
 
       // Convert it to List<Map<String, dynamic?>>
       List<Map<String, dynamic?>> todosMapList = todosDynamic
-          .map((item) => item as Map<String, dynamic?>)
+          .map((item) => item as Map<String, dynamic>)
           .toList();
       final settingsMap = {
         'isDarkMode': jsonMap['isDarkMode'],

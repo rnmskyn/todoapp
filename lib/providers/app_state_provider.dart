@@ -13,7 +13,7 @@ enum StorageType {
   JSON,
 }
 
-final storageSelection = StorageType.JSON;
+final storageSelection = StorageType.SQLite;
 
 class AppStateNotifier extends StateNotifier<AppState> {
   final StorageService _storageService;
