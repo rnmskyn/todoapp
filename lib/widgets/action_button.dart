@@ -39,7 +39,7 @@ class DeleteButton extends ConsumerWidget {
           ref.read(appStateProvider.notifier).deleteSelectedTodos();
         }
       },
-      backgroundColor: Colors.blue, // Optional: button color
+      backgroundColor: const Color.fromARGB(255, 243, 51, 33), // Optional: button color
       foregroundColor: Colors.white, // Optional: icon color
       child: const Icon(Icons.delete), // The icon inside the button
     );
